@@ -1,15 +1,10 @@
 services:
   - type: web
-    name: your-app-name
+    name: mlbased-dataset-evaluation  # Choose a unique name
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python run.py
+    startCommand: gunicorn --workers 3 --bind 0.0.0.0:$PORT app:app  # See note below
+    healthCheckPath: /health  # Optional, but recommended
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.9
-      - key: FLASK_SECRET_KEY  # Add this!
-        value: d3f7c5a9b1824e3fa6d9c4b87e2a1f50  # Replace with a generated secret key
-    disk:
-      name: data
-      mountPath: /opt/render/project/uploads
-      sizeGB: 10
+      - key: PORT
+        value: "10000"  
