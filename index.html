@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis Platform</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Color Palette (Modern & Minimalist) */
+        :root {
+            --primary-bg: #f9f9fb;
+            --secondary-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #4f46e5;
+            --accent-color-light: #6366f1;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --warning-color: #facc15;
+            --info-color: #0ea5e9;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --dropdown-shadow: rgba(0, 0, 0, 0.1);
+            --upload-bg: #edf2f7; /* Light background for upload area */
+        }
+
+        /* Global Styles */
+        body {
+            font-family: 'Sora', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            grid-template-rows: 70px 1fr;
+            min-height: 100vh; /* Changed height to min-height */
+            overflow: hidden; /* Keep this */
+            border-radius: 1.25rem;
+            box-shadow: 0 0.75rem 2.25rem var(--shadow-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            background-color: var(--secondary-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+            height: 100vh; /* Keep height 100vh */
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar-header {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 2.75rem;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+            text-align: left;
+            width: 100%;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .sidebar-menu-item {
+            margin-bottom: 1.25rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-menu-link:hover,
+        .sidebar-menu-link.active {
+            background-color: var(--accent-color-light);
+            color: var(--secondary-bg);
+            transform: scale(1.03);
+        }
+
+        :root {
+            --accent-color-rgb: 79, 70, 229;
+        }
+
+        .sidebar-menu-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            grid-column: 2;
+            grid-row: 1;
+            background-color: var(--secondary-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100; /* Ensure it's above the content */
+            position: sticky;
+            top: 0;
+        }
+
+        .navbar-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-profile-name {
+            margin-right: 0;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            grid-column: 2;
+            grid-row: 2;
+            padding: 2.5rem;
+            overflow-y: auto;
+            /* height: calc(100vh - 70px); */ /* Try this first.  Subtract navbar height.  May cause a scrollbar on the <html> element */
+        }
+
+        /* Dashboard Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+        }
+
+        .card:hover {
+            transform: translateY(-0.25rem);
+            box-shadow: 0 0.5rem 1rem var(--shadow-color);
+        }
+
+        .card-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        /* Amazing Upload Data Styling */
+        .upload-container {
+            background-color: var(--upload-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            position: relative; /* For positioning filename */
+        }
+
+        .upload-container:hover {
+            background-color: var(--secondary-bg);
+            border-color: var(--accent-color);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Hidden File Input */
+        #fileUpload {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+       .filename {
+          position: absolute;
+          bottom: 1rem;
+          left: 50%;
+          transform: translateX(-50%);
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+          font-style: italic;
+       }
+
+
+        /* Modern Custom Dropdown */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1.25rem;
+        }
+
+        .custom-dropdown select {
+            /* Reset default select styles */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-weight: 500;
+            cursor: pointer;
+            padding-right: 2.5rem; /* Space for arrow */
+        }
+
+        .custom-dropdown select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+        }
+
+        /* Arrow Icon */
+        .custom-dropdown::after {
+            content: '\f0d7'; /* Font Awesome chevron-down */
+            font-family: FontAwesome;
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none; /* Make the arrow non-interactive */
+            transition: color 0.2s ease;
+        }
+
+        .custom-dropdown select:hover::after,
+        .custom-dropdown select:focus::after {
+            color: var(--accent-color);
+        }
+
+        /* Stylized Dropdown Container */
+        .dropdown-container {
+            position: relative;
+            width: 97%;
+        }
+
+        /* Custom Dropdown List */
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 0.25rem 0.5rem var(--dropdown-shadow);
+            z-index: 10;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none; /* Hidden by default */
+            overflow: hidden; /* Prevents rounded corners from being ignored */
+        }
+
+        .dropdown-container.active .dropdown-list {
+            display: block; /* Show when active */
+        }
+
+        /* Dropdown List Items */
+        .dropdown-list li {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: var(--text-primary);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .dropdown-list li:hover {
+            background-color: var(--accent-color-light);
+            color: var(--secondary-bg);
+        }
+
+        /* Selected Option Display */
+        .selected-option {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            position: relative;
+            text-align: left; /* Ensure text aligns to the left */
+        }
+
+        .selected-option::after {
+            content: '\f0d7';
+            font-family: FontAwesome;
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        /* Button and other Form Elements */
+        button {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: var(--accent-color);
+            color: var(--secondary-bg);
+            font-size: 1rem;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--accent-color-light);
+            transform: translateY(-0.1rem);
+            box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+        }
+
+         /* Code Snippets */
+        code {
+            background-color: var(--code-bg);
+            color: var(--text-primary);
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.4rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Results Container */
+        .results-container {
+            margin-top: 2rem;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+        }
+
+        .results-container h3 {
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .results-container p {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-container p:last-child {
+            border-bottom: none;
+        }
+
+        /* Image Styles */
+        img {
+            max-width: 100%;
+            border-radius: 0.6rem;
+            border: 1px solid var(--border-color);
+            margin-top: 1.25rem;
+            box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
+        }
+
+        /* Status Messages */
+        .status {
+            margin-top: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.6rem;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background-color: rgba(22, 163, 74, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .status.error {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        /* Loading Indicator */
+        .loading {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(79, 70, 229, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s linear infinite;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+         /* No Outlines for Focus */
+        *:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Responsive Design Adjustments */
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 70px 1fr;
+            }
+
+            .sidebar {
+                grid-column: 1;
+                grid-row: 1;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                position: static;
+                height: auto;
+                overflow-y: auto;
+                padding: 1.5rem;
+            }
+
+            .navbar {
+                grid-column: 1;
+                grid-row: 2;
+                padding: 1rem 1.5rem;
+            }
+
+            .main-content {
+                grid-column: 1;
+                grid-row: 3;
+                padding: 1.5rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .sidebar-menu-item {
+                margin-bottom: 0.75rem;
+            }
+
+            .sidebar-menu-link {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .navbar-title {
+                font-size: 1.1rem;
+            }
+
+            .user-profile-name {
+                font-size: 0.9rem;
+            }
+
+             /* Form element adjustments for smaller screens */
+            .custom-dropdown select,
+            button
+           {
+                padding: 0.9rem;
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+
+            .results-container {
+                margin-top: 1.5rem;
+                padding: 1rem;
+            }
+
+            .results-container h3 {
+                font-size: 1.1rem;
+                margin-bottom: 0.8rem;
+                padding-bottom: 0.6rem;
+            }
+
+            .results-container p {
+                padding: 0.6rem 0;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Section Visibility (Hidden by Default) */
+        .analysis-section {
+            display: none;
+        }
+
+        .analysis-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            Data Insights
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="#uploadSection" class="sidebar-menu-link" onclick="showSection('uploadSection')">
+                    <i class="sidebar-menu-icon fas fa-upload"></i>
+                    Upload Data
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#regressionSection" class="sidebar-menu-link" onclick="showSection('regressionSection')">
+                    <i class="sidebar-menu-icon fas fa-chart-line"></i>
+                    Regression
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#classificationSection" class="sidebar-menu-link" onclick="showSection('classificationSection')">
+                    <i class="sidebar-menu-icon fas fa-th"></i>
+                    Classification
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#clusteringSection" class="sidebar-menu-link" onclick="showSection('clusteringSection')">
+                    <i class="sidebar-menu-icon fas fa-project-diagram"></i>
+                    Clustering
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-title" id="navbarTitle">
+            Dashboard Overview
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="dashboard-grid">
+
+            <!-- Upload Data Section -->
+            <section id="uploadSection" class="analysis-section active">
+                <div class="card">
+                    <div class="card-header">
+                        Upload Data
+                    </div>
+                  <div class="upload-container">
+                        <i class="fas fa-upload upload-icon"></i>
+                        <p class="upload-text">Drag and drop your CSV file here or click to browse</p>
+                        <input type="file" id="fileUpload" accept=".csv" onchange="handleFileUpload(this.files)">
+                         <div class="filename" id="filenameDisplay">No file selected</div>
+                  </div>
+                </div>
+                <div id="uploadStatus"></div>
+            </section>
+
+            <!-- Regression Analysis Section -->
+            <section id="regressionSection" class="analysis-section">
+                <div class="card">
+                    <div class="card-header">
+                        Regression Analysis
+                    </div>
+                    <div class="dropdown-container">
+                        <span class="selected-option" onclick="toggleDropdown(this)">Select Model</span>
+                        <ul class="dropdown-list">
+                            <li onclick="selectOption(this, 'Linear Regression')">Linear Regression</li>
+                            <li onclick="selectOption(this, 'Random Forest')">Random Forest</li>
+                            <li onclick="selectOption(this, 'KNN')">KNN</li>
+                            <li onclick="selectOption(this, 'SVM')">SVM</li>
+                            <li onclick="selectOption(this, 'Ridge Regression')">Ridge Regression</li>
+                            <li onclick="selectOption(this, 'Lasso Regression')">Lasso Regression</li>
+                            <li onclick="selectOption(this, 'Gradient Boosting')">Gradient Boosting</li>
+                            <li onclick="selectOption(this, 'AdaBoost')">AdaBoost</li>
+                            <li onclick="selectOption(this, 'Decision Tree')">Decision Tree</li>
+                            <li onclick="selectOption(this, 'Gaussian Process')">Gaussian Process</li>
+                        </ul>
+                        <input type="hidden" id="regressionModel" name="regressionModel">
+                    </div>
+                    <p></p>
+                    <button onclick="runRegression()">Run Analysis</button>
+                    <div id="regressionResults" class="results-container"></div>
+                </div>
+            </section>
+
+            <!-- Classification Analysis Section -->
+            <section id="classificationSection" class="analysis-section">
+                <div class="card">
+                    <div class="card-header">
+                        Classification Analysis
+                    </div>
+                    <div class="dropdown-container">
+                        <span class="selected-option" onclick="toggleDropdown(this)">Select Model</span>
+                        <ul class="dropdown-list">
+                            <li onclick="selectOption(this, 'Random Forest')">Random Forest</li>
+                            <li onclick="selectOption(this, 'KNN')">KNN</li>
+                            <li onclick="selectOption(this, 'SVM')">SVM</li>
+                            <li onclick="selectOption(this, 'Gradient Boosting')">Gradient Boosting</li>
+                            <li onclick="selectOption(this, 'AdaBoost')">AdaBoost</li>
+                            <li onclick="selectOption(this, 'Decision Tree')">Decision Tree</li>
+                            <li onclick="selectOption(this, 'Gaussian Naive Bayes')">Gaussian Naive Bayes</li>
+                            <li onclick="selectOption(this, 'Linear Discriminant Analysis')">Linear Discriminant Analysis</li>
+                            <li onclick="selectOption(this, 'Quadratic Discriminant Analysis')">Quadratic Discriminant Analysis</li>
+                            <li onclick="selectOption(this, 'MLP Classifier')">MLP Classifier</li>
+                        </ul>
+                        <input type="hidden" id="classificationModel" name="classificationModel">
+                    </div>
+                    <p></p>
+                    <button onclick="runClassification()">Run Analysis</button>
+                    <div id="classificationResults" class="results-container"></div>
+                    <div id="confusionMatrix"></div>
+                </div>
+            </section>
+
+            <!-- Clustering Analysis Section -->
+            <section id="clusteringSection" class="analysis-section">
+                <div class="card">
+                    <div class="card-header">
+                        Clustering Analysis
+                    </div>
+                    <button onclick="runClustering()">Run Analysis</button>
+                    <div id="clusteringResults" class="results-container"></div>
+                    <div id="clusterDistribution"></div>
+                    <div id="boxPlots"></div>
+                    <div id="distinctiveFeatures"></div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+<script>
+    // JavaScript code remains unchanged
+    const API_URL = 'http://0.0.0.0:8000';
+
+    let uploadedFile = null; // Store the uploaded file
+
+    async function uploadFile() {
+        if (!uploadedFile) {
+            alert("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        const statusDiv = document.getElementById('uploadStatus');
+        statusDiv.className = 'status';
+        statusDiv.innerHTML = '<div class="loading"></div> Uploading...';
+
+        try {
+            const response = await fetch(`${API_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                statusDiv.className = 'status success';
+                statusDiv.innerText = data.message;
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerText = `Error: ${data.error}`;
+            }
+        } catch (error) {
+            statusDiv.className = 'status error';
+            statusDiv.innerText = `Error: ${error}`;
+        }
+    }
+
+     function handleFileUpload(files) {
+        if (files.length > 0) {
+            uploadedFile = files[0]; // Store the file
+            document.getElementById('filenameDisplay').innerText = uploadedFile.name;
+            uploadFile();  // Directly upload the file
+        } else {
+            document.getElementById('filenameDisplay').innerText = "No file selected";
+            uploadedFile = null;  // Reset the uploaded file
+        }
+    }
+
+
+    async function runRegression() {
+        const model = document.getElementById('regressionModel').value;
+        const resultsDiv = document.getElementById('regressionResults');
+        resultsDiv.innerHTML = '<div class="loading"></div> Running analysis...';
+
+        try {
+            const response = await fetch(`${API_URL}/regression`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model: model })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                let resultsHTML = '<h3>Results</h3>';
+                for (const key in data) {
+                    resultsHTML += `<p><span>${key}:</span> <span>${data[key].toFixed(4)}</span></p>`;
+                }
+                resultsDiv.innerHTML = resultsHTML;
+            } else {
+                resultsDiv.innerHTML = `<div class="status error">Error: ${data.error}</div>`;
+            }
+        } catch (error) {
+            resultsDiv.innerHTML = `<div class="status error">Error: ${error}</div>`;
+        }
+    }
+
+    async function runClassification() {
+        const model = document.getElementById('classificationModel').value;
+        const resultsDiv = document.getElementById('classificationResults');
+        resultsDiv.innerHTML = '<div class="loading"></div> Running analysis...';
+        try {
+            const response = await fetch(`${API_URL}/classification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model: model })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                let resultsHTML = '';
+                for (const key in data.metrics) {
+                    resultsHTML += `<p>${key}: ${data.metrics[key].toFixed(4)}</p>`;
+                }
+                document.getElementById('classificationResults').innerHTML = resultsHTML;
+
+                const confusionMatrixImage = document.createElement('img');
+                confusionMatrixImage.src = `data:image/png;base64,${data.confusion_matrix}`;
+                document.getElementById('confusionMatrix').innerHTML = '';
+                document.getElementById('confusionMatrix').appendChild(confusionMatrixImage);
+            } else {
+                document.getElementById('classificationResults').innerText = `Error: ${data.error}`;
+                document.getElementById('confusionMatrix').innerHTML = '';
+            }
+        } catch (error) {
+            document.getElementById('classificationResults').innerText = `Error: ${error}`;
+            document.getElementById('confusionMatrix').innerHTML = '';
+        }
+    }
+
+    async function runClustering() {
+        const resultsDiv = document.getElementById('clusteringResults');
+        resultsDiv.innerHTML = '<div class="loading"></div> Running analysis...';
+        try {
+            const response = await fetch(`${API_URL}/clustering`, {
+                method: 'GET'
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                let analysisHTML = '<h3>Cluster Analysis (Means)</h3>';
+                for (const cluster in data.cluster_analysis) {
+                    analysisHTML += `<p><b>Cluster ${cluster}:</b></p>`;
+                    for (const feature in data.cluster_analysis[cluster]) {
+                        analysisHTML += `<p>  ${feature}: ${data.cluster_analysis[cluster][feature].toFixed(4)}</p>`;
+                    }
+                }
+                document.getElementById('clusteringResults').innerHTML = analysisHTML;
+
+                const clusterDistImage = document.createElement('img');
+                clusterDistImage.src = `data:image/png;base64,${data.cluster_distribution_plot}`;
+                document.getElementById('clusterDistribution').innerHTML = '';
+                document.getElementById('clusterDistribution').appendChild(clusterDistImage);
+
+                let boxPlotsHTML = '<h3>Box Plots</h3>';
+                for (const col in data.box_plot_images) {
+                    boxPlotsHTML += `<h4>${col}</h4>`;
+                    const boxPlotImage = document.createElement('img');
+                    boxPlotImage.src = `data:image/png;base64,${data.box_plot_images[col]}`;
+                    boxPlotsHTML += '<div style="display: inline-block;">';
+                    boxPlotsHTML += boxPlotImage.outerHTML;
+                    boxPlotsHTML += '</div>';
+                }
+                document.getElementById('boxPlots').innerHTML = boxPlotsHTML;
+
+                let distinctiveFeaturesHTML = '<h3>Distinctive Features</h3>';
+                for (let i = 0; i < 3; i++) {
+                    distinctiveFeaturesHTML += `<p><b>Cluster ${i}:</b> ${data.distinctive_features[i].join(', ')}</p>`;
+                }
+                document.getElementById('distinctiveFeatures').innerHTML = distinctiveFeaturesHTML;
+            } else {
+                document.getElementById('clusteringResults').innerText = `Error: ${data.error}`;
+                document.getElementById('clusterDistribution').innerHTML = '';
+                document.getElementById('boxPlots').innerHTML = '';
+                document.getElementById('distinctiveFeatures').innerHTML = '';
+            }
+        } catch (error) {
+            document.getElementById('clusteringResults').innerText = `Error: ${error}`;
+            document.getElementById('clusterDistribution').innerHTML = '';
+            document.getElementById('boxPlots').innerHTML = '';
+            document.getElementById('distinctiveFeatures').innerHTML = '';
+        }
+    }
+
+    function showSection(sectionId) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.analysis-section');
+        sections.forEach(section => section.classList.remove('active'));
+
+        // Show the selected section
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.add('active');
+        }
+
+        // Update navbar title
+        let title = "Dashboard Overview";
+        if (sectionId === "regressionSection") title = "Regression Analysis";
+        if (sectionId === "classificationSection") title = "Classification Analysis";
+        if (sectionId === "clusteringSection") title = "Clustering Analysis";
+        document.getElementById("navbarTitle").innerText = title;
+    }
+
+    function toggleDropdown(element) {
+        const dropdownContainer = element.parentNode;
+        dropdownContainer.classList.toggle('active');
+    }
+
+    function selectOption(element, value) {
+        const dropdownContainer = element.parentNode.parentNode;
+        const selectedOption = dropdownContainer.querySelector('.selected-option');
+        selectedOption.innerText = value;
+        dropdownContainer.classList.remove('active');
+
+        // Set the value of the hidden input field
+        const hiddenInput = dropdownContainer.querySelector('input[type="hidden"]');
+        hiddenInput.value = value;
+    }
+
+    // Close dropdown when clicking outside
+    window.addEventListener('click', function(event) {
+        if (!event.target.matches('.selected-option')) {
+            const dropdowns = document.querySelectorAll('.dropdown-container');
+            dropdowns.forEach(dropdown => {
+                if (dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
